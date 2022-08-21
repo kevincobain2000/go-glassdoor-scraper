@@ -1,0 +1,36 @@
+on: [push, pull_request]
+name: CI
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [latest, dev-latest]
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: kevincobain2000/action-gobrew@v1
+        with:
+          version: ${{ matrix.go-version }}
+
+      - name: Install Tools
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@master
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          go install github.com/swaggo/swag/cmd/swag@latest
+          go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+
+      - name: Tidy
+        run: go mod tidy
+      - name: Static Check
+        run: staticcheck ./...
+      - name: Vet
+        run: go vet -v ./...
+      - name: Secure
+        run: gosec ./...
+      - name: Cyclo
+        run: gocyclo -over 20 ./
+      - name: Build
+        run: go build main.go
+      - name: Test
+        run: go test -race -v ./... -count=1
