@@ -4,8 +4,8 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [latest, dev-latest]
-        os: [ubuntu-latest, macos-latest]
+        go-version: [dev-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
